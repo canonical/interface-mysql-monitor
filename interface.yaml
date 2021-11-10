@@ -1,0 +1,4 @@
+name: mysql-monitor
+summary: Interface for connection to MySQL for the purpose of collecting all metrics
+version: 1
+maintainer: "Robert Gildein <robert.gildein@canonical.com>"
