@@ -38,10 +38,12 @@ class MySQLMonitor(Endpoint):
     def broken_or_departed(self):
         """Handle broken relation."""
         for relation in self.relations:
-            relation.to_publish_raw["host"] = None
-            relation.to_publish_raw["port"] = None
-            relation.to_publish_raw["username"] = None
-            relation.to_publish_raw["password"] = None
+            relation.to_publish.update({
+                "host": None,
+                "port": None,
+                "username": None,
+                "password": None,
+            })
 
         clear_flag(self.expand_name("{endpoint_name}.connected"))
 
@@ -57,7 +59,9 @@ class MySQLMonitor(Endpoint):
         :type: str
         """
         for relation in self.relations:
-            relation.to_publish_raw["host"] = self.relation_ip
-            relation.to_publish_raw["port"] = port
-            relation.to_publish_raw["username"] = user
-            relation.to_publish_raw["password"] = password
+            relation.to_publish.update({
+                "host": self.relation_ip,
+                "port": port,
+                "username": user,
+                "password": password,
+            })

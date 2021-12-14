@@ -18,6 +18,9 @@ import mock
 
 import requires
 
+TEST_IP = "10.10.10.10"
+TEST_PORT = 3306
+
 
 class TestRegisteredHooks(test_utils.TestRegisteredHooks):
 
@@ -39,7 +42,9 @@ class TestRegisteredHooks(test_utils.TestRegisteredHooks):
 
 
 class TestMySQLMonitorRequires(test_utils.PatchHelper):
+
     def setUp(self):
+        """Set up before each test."""
         super().setUp()
         self._patches = {}
         self._patches_start = {}
@@ -52,7 +57,7 @@ class TestMySQLMonitorRequires(test_utils.PatchHelper):
         self.fake_relation_id = "db-monitor:42"
         self.fake_relation = mock.MagicMock()
         self.fake_relation.relation_id = self.fake_relation_id
-        self.fake_relation.joined_units = [self.fake_unit]
+        self.fake_relation.units = [self.fake_unit]
 
         self.ep_name = "db-monitor"
         self.ep = requires.MySQLMonitorClient(
@@ -61,6 +66,7 @@ class TestMySQLMonitorRequires(test_utils.PatchHelper):
         self.ep.relations[0] = self.fake_relation
 
     def tearDown(self):
+        """Clean after each test."""
         self.ep = None
         for k, v in self._patches.items():
             v.stop()
@@ -69,35 +75,39 @@ class TestMySQLMonitorRequires(test_utils.PatchHelper):
         self._patches_start = None
 
     def test_joined(self):
+        """Test join hook."""
         self.ep.joined()
         self.set_flag.assert_called_once_with(
             "{}.connected".format(self.ep_name)
         )
 
     def test_broken_or_departed(self):
+        """Test broken/departed hook."""
         self.ep.broken_or_departed()
         self.clear_flag.assert_called_once_with(
             "{}.connected".format(self.ep_name)
         )
 
     def test_is_access_provided(self):
+        """Test successful access."""
         self.fake_unit.received_raw = {
-            "host": "10.10.10.10",
-            "port": 3306,
+            "host": TEST_IP,
+            "port": TEST_PORT,
             "username": "user",
-            "password": "passwd"
+            "password": "password"
         }
 
-        self.assertEqual(self.ep.host, "10.10.10.10")
-        self.assertEqual(self.ep.port, 3306)
+        self.assertEqual(self.ep.host, TEST_IP)
+        self.assertEqual(self.ep.port, TEST_PORT)
         self.assertEqual(self.ep.username, "user")
         self.assertEqual(self.ep.password, "password")
         self.assertTrue(self.ep.is_access_provided())
 
     def test_is_access_provided_failed(self):
+        """Test failed to grant access."""
         self.fake_unit.received_raw = {
             "username": "user",
-            "password": "passwd"
+            "password": "password"
         }
 
         self.assertEqual(self.ep.port, 3306)

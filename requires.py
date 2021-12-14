@@ -31,24 +31,24 @@ class MySQLMonitorClient(Endpoint):
     @property
     def host(self):
         """Return the host for the provided database."""
-        return self.all_joined_units.received_raw["host"]
+        return self.all_joined_units.received["host"]
 
     @property
     def port(self):
         """Return the port the provided database.
         If not available, returns the default port of 3306.
         """
-        return self.all_joined_units.received_raw.get("port", 3306)
+        return self.all_joined_units.received.get("port", 3306)
 
     @property
     def username(self):
         """Return the username for the provided database."""
-        return self.all_joined_units.received_raw["username"]
+        return self.all_joined_units.received["username"]
 
     @property
     def password(self):
         """Return the password for the provided database."""
-        return self.all_joined_units.received_raw["password"]
+        return self.all_joined_units.received["password"]
 
     def is_access_provided(self):
         """Check if all credentials are available."""

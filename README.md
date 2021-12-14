@@ -15,7 +15,7 @@ that user will have only read access and could collect all metrics.
 To consume this interface in your charm or layer, add the following to 
 `layer.yaml`:
 
-    includes: ['interface:mysql-monitor']
+    includes: ["interface:mysql-monitor"]
 
 ## Requires
 

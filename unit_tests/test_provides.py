@@ -17,6 +17,9 @@ import mock
 
 import provides
 
+TEST_IP = "10.10.10.10"
+TEST_PORT = 3306
+
 
 class TestRegisteredHooks(test_utils.TestRegisteredHooks):
 
@@ -43,13 +46,13 @@ class TestRegisteredHooks(test_utils.TestRegisteredHooks):
 class TestMySQLMonitorProvides(test_utils.PatchHelper):
 
     def setUp(self):
+        """Set up before each test."""
         super().setUp()
         self._patches = {}
         self._patches_start = {}
         self.patch_object(provides, "clear_flag")
         self.patch_object(provides, "set_flag")
-        self.patch_object(provides.ch_net_ip, "get_relation_ip",
-                          return_value="10.10.10.10")
+        self.patch_object(provides.ch_net_ip, "get_relation_ip", return_value=TEST_IP)
 
         self.fake_unit = mock.MagicMock()
         self.fake_unit.unit_name = "mysql-innodb-cluster/4"
@@ -65,6 +68,7 @@ class TestMySQLMonitorProvides(test_utils.PatchHelper):
         self.ep.relations[0] = self.fake_relation
 
     def tearDown(self):
+        """Clean after each test."""
         self.ep = None
         for k, v in self._patches.items():
             v.stop()
@@ -73,30 +77,31 @@ class TestMySQLMonitorProvides(test_utils.PatchHelper):
         self._patches_start = None
 
     def test_joined(self):
+        """Test join hook."""
         self.ep.joined()
         self.set_flag.assert_called_once_with(
             "{}.connected".format(self.ep_name)
         )
 
     def test_departed_or_broken(self):
+        """Test departed/broken hook."""
         self.ep.broken_or_departed()
-        _calls = [
-            mock.call("host", None),
-            mock.call("port", None),
-            mock.call("username", None),
-            mock.call("password", None),
-        ]
         self.clear_flag.assert_called_once_with(
             "{}.connected".format(self.ep_name)
         )
-        self.fake_relation.to_publish_raw.__setitem__.assert_has_calls(_calls)
+        self.fake_relation.to_publish.update.assert_called_once_with({
+            "host": None,
+            "port": None,
+            "username": None,
+            "password": None,
+        })
 
     def test_provide_access(self):
-        self.ep.provide_access(3306, "user", "password")
-        _calls = [
-            mock.call("host", "10.10.10.10"),
-            mock.call("port", 3306),
-            mock.call("username", "user"),
-            mock.call("password", "password"),
-        ]
-        self.fake_relation.to_publish_raw.__setitem__.assert_has_calls(_calls)
+        """Test the provide of MySQL credentials in relation to the data."""
+        self.ep.provide_access(TEST_PORT, "user", "password")
+        self.fake_relation.to_publish.update.assert_called_once_with({
+            "host": TEST_IP,
+            "port": TEST_PORT,
+            "username": "user",
+            "password": "password",
+        })
