@@ -2,3 +2,9 @@ name: mysql-monitor
 summary: Interface for connection to MySQL for the purpose of collecting all metrics
 version: 1
 maintainer: "Robert Gildein <robert.gildein@canonical.com>"
+ignore:
+  - unit_tests
+  - test-requirements.txt
+  - tox.ini
+  - .gitignore
+  - .tox
